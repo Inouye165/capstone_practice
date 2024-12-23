@@ -1,3 +1,5 @@
+// src/Components/Navbar/Navbar.js
+
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
@@ -23,11 +25,18 @@ function Navbar() {
           <li className="link">
             <Link to="/">Home</Link>
           </li>
+          <li className="link">
+            <Link to="/instant-consultation">
+              <button className="btn1">Instant Consultation</button>
+            </Link>
+          </li>
           {email ? (
             <>
               <li className="link">Hello, {name}</li>
               <li className="link">
-                <button onClick={handleLogout} className="btn1">Logout</button>
+                <button onClick={handleLogout} className="btn1">
+                  Logout
+                </button>
               </li>
             </>
           ) : (
