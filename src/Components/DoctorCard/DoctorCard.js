@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import './DoctorCard.css';
+import AppointmentForm from '../AppointmentForm/AppointmentForm'; // Import AppointmentForm
+import { v4 as uuidv4 } from 'uuid';
 
 const DoctorCard = ({ name, speciality, experience, ratings, profilePic }) => {
   const [showModal, setShowModal] = useState(false);
+  const [appointments, setAppointments] = useState([]);
 
   const handleBookAppointment = () => {
     setShowModal(true);
@@ -11,6 +14,15 @@ const DoctorCard = ({ name, speciality, experience, ratings, profilePic }) => {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+
+  const handleFormSubmit = (appointmentData) => {
+    const newAppointment = {
+        id: uuidv4(), // Use uuidv4 to generate a unique ID
+        ...appointmentData,
+    };
+    setAppointments([...appointments, newAppointment]);
+    setShowModal(false);
+};
 
   return (
     <div className="doctor-card-container">
@@ -35,14 +47,12 @@ const DoctorCard = ({ name, speciality, experience, ratings, profilePic }) => {
         </div>
       </div>
 
-      {/* Modal for booking appointment (replace with your actual modal logic) */}
+      {/* Modal for booking appointment */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
             <span className="close" onClick={handleCloseModal}>&times;</span>
-            <h2>Book Appointment</h2>
-            <p>Appointment booking functionality will go here.</p>
-            {/* You'll likely want to add a form or other UI elements here */}
+            <AppointmentForm doctorName={name} doctorSpeciality={speciality} onSubmit={handleFormSubmit} />
           </div>
         </div>
       )}
