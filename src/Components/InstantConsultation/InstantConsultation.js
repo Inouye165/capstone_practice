@@ -2,69 +2,63 @@
 import React, { useEffect, useState } from 'react';
 import './InstantConsultation.css';
 import { useSearchParams } from 'react-router-dom';
-import FindDoctorSearchIC from './FindDoctorSearchIC/FindDoctorSearchIC';
-import DoctorCardIC from './DoctorCardIC/DoctorCardIC';
+import FindDoctorSearch from '../FindDoctorSearch/FindDoctorSearch'; // Import the updated FindDoctorSearch
+import DoctorCardIC from './DoctorCardIC/DoctorCardIC'; // Assuming you still need this
 
 const InstantConsultation = () => {
-    const [searchParams] = useSearchParams();
-    const [doctors, setDoctors] = useState([]);
-    const [filteredDoctors, setFilteredDoctors] = useState([]);
-    const [isSearched, setIsSearched] = useState(false);
-    
-    const getDoctorsDetails = () => {
-        fetch('https://api.npoint.io/9a5543d36f1460da2f63')
-        .then(res => res.json())
-        .then(data => {
-            if (searchParams.get('speciality')) {
-                const filtered = data.filter(doctor => doctor.speciality.toLowerCase() === searchParams.get('speciality').toLowerCase());
-                setFilteredDoctors(filtered);
-                setIsSearched(true);
-            } else {
-                setFilteredDoctors([]);
-                setIsSearched(false);
-            }
-            setDoctors(data);
-        })
-        .catch(err => console.log(err));
-    }
+  const [searchParams] = useSearchParams();
+  const [doctors, setDoctors] = useState([]);
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
 
-    const handleSearch = (searchText) => {
-        if (searchText === '') {
-            setFilteredDoctors([]);
-            setIsSearched(false);
-        } else {
-            const filtered = doctors.filter(doctor => doctor.speciality.toLowerCase().includes(searchText.toLowerCase()));
-            setFilteredDoctors(filtered);
-            setIsSearched(true);
+  useEffect(() => {
+    const getDoctorsDetails = async () => {
+      try {
+        const response = await fetch('https://api.npoint.io/9a5543d36f1460da2f63');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
+        const data = await response.json();
+        setDoctors(data);
+      } catch (error) {
+        console.error('Error fetching doctors:', error);
+      }
     };
 
-    useEffect(() => {
-        getDoctorsDetails();
-    }, [searchParams]);
+    getDoctorsDetails();
+  }, []);
 
-    return (
-        <center>
-            <div className="searchpage-container">
-                <FindDoctorSearchIC onSearch={handleSearch} />
-                <div className="search-results-container">
-                    {isSearched ? (
-                        <center>
-                            <h2>{filteredDoctors.length} doctors are available {searchParams.get('location')}</h2>
-                            <h3>Book appointments with minimum wait-time & verified doctor details</h3>
-                            {filteredDoctors.length > 0 ? (
-                                filteredDoctors.map(doctor => <DoctorCardIC className="doctorcard" {...doctor} key={doctor.name} />)
-                            ) : (
-                                <p>No doctors found.</p>
-                            )}
-                        </center>
-                    ) : (
-                        ''
-                    )}
-                </div>
-            </div>
-        </center>
-    );
-}
+  useEffect(() => {
+    const speciality = searchParams.get('speciality')?.toLowerCase();
+    const location = searchParams.get('location')?.toLowerCase(); // Get location parameter
+  
+    const filtered = doctors.filter(doctor => {
+      const matchesSpeciality = speciality ? doctor.speciality.toLowerCase() === speciality : true;
+      const matchesLocation = location ? doctor.location.toLowerCase().includes(location) : true; // Filter by location if available
+      
+      return matchesSpeciality && matchesLocation;
+    });
+  
+    setFilteredDoctors(filtered);
+  }, [doctors, searchParams]);
+
+  return (
+    <div className="searchpage-container">
+      <FindDoctorSearch /> {/* Use the updated FindDoctorSearch component */}
+      <div className="search-results-container">
+        {filteredDoctors.length > 0 ? (
+          <>
+            <h2>{filteredDoctors.length} doctors are available {searchParams.get('location') || ''}</h2>
+            <h3>Book appointments with minimum wait-time & verified doctor details</h3>
+            {filteredDoctors.map(doctor => (
+              <DoctorCardIC className="doctorcard" {...doctor} key={doctor.name} />
+            ))}
+          </>
+        ) : (
+          <p>No doctors found for this criteria.</p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default InstantConsultation;
